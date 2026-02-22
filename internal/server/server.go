@@ -47,6 +47,14 @@ func Run() {
 	apiGroup := router.Group("/api")
 	apiGroup.POST("/search", handlers.Search)
 	apiGroup.GET("/cities", handlers.Cities)
+	apiGroup.POST("/chat", handlers.Chat)
+	apiGroup.POST("/auth/send-otp", handlers.SendOTP)
+	apiGroup.POST("/auth/verify-otp", handlers.VerifyOTP)
+	flightsGroup := apiGroup.Group("/flights")
+	flightsGroup.Use(handlers.AuthMiddleware)
+	flightsGroup.GET("", handlers.ListFlights)
+	flightsGroup.POST("", handlers.AddFlight)
+	flightsGroup.DELETE("/:id", handlers.DeleteFlight)
 
 	buildPath := filepath.Join(*dataDir, "build")
 	if _, err := os.Stat(buildPath); err == nil {

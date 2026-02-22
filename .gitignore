@@ -1,3 +1,6 @@
+# Internal docs (not for repo)
+docs/internal/
+
 # Build outputs
 build/
 triangle_travel
