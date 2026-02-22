@@ -104,7 +104,7 @@
     clearToken();
     loggedIn = false;
     flights = [];
-    showLogin = true;
+    step = 'phone';
   }
 
   async function loadFlights() {

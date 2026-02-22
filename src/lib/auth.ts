@@ -3,13 +3,13 @@ const PHONE_KEY = 'travel_app_phone';
 
 // Dev/sandbox: use sessionStorage (clears on tab close). Prod: use localStorage
 // Dev = Vite dev server (import.meta.env.DEV) or localhost (built app served locally)
-function getStorage(): Storage {
-  if (typeof window === 'undefined') return localStorage;
+// Lazy: never access storage at module load (SSR has no window/localStorage)
+function getStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
   if (import.meta.env.DEV) return sessionStorage;
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return sessionStorage;
   return localStorage;
 }
-const storage = getStorage();
 
 export const DevPhone = '+15550000000';
 export const DevOTP = '123456';
@@ -18,25 +18,31 @@ export const isDev =
   (import.meta.env?.DEV === true || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
 export function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return storage.getItem(TOKEN_KEY);
+  const s = getStorage();
+  return s ? s.getItem(TOKEN_KEY) : null;
 }
 
 export function setToken(token: string): void {
-  storage.setItem(TOKEN_KEY, token);
+  const s = getStorage();
+  if (s) s.setItem(TOKEN_KEY, token);
 }
 
 export function clearToken(): void {
-  storage.removeItem(TOKEN_KEY);
-  storage.removeItem(PHONE_KEY);
+  const s = getStorage();
+  if (s) {
+    s.removeItem(TOKEN_KEY);
+    s.removeItem(PHONE_KEY);
+  }
 }
 
 export function setPhone(phone: string): void {
-  storage.setItem(PHONE_KEY, phone);
+  const s = getStorage();
+  if (s) s.setItem(PHONE_KEY, phone);
 }
 
 export function getPhone(): string | null {
-  return storage.getItem(PHONE_KEY);
+  const s = getStorage();
+  return s ? s.getItem(PHONE_KEY) : null;
 }
 
 export function isLoggedIn(): boolean {
