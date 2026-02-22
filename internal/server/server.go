@@ -17,6 +17,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"triangle_travel/internal/api"
+	"triangle_travel/internal/auth"
 	"triangle_travel/internal/db"
 )
 
@@ -40,6 +41,12 @@ func Run() {
 	}
 	defer database.Close()
 
+	// Seed dev user when in sandbox/development
+	if auth.IsDev() {
+		_, _ = database.Exec("INSERT OR IGNORE INTO users (phone) VALUES (?)", auth.DevPhone)
+		log.Printf("Dev mode: seeded user %s (OTP: %s)", auth.DevPhone, auth.DevOTP)
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
@@ -47,6 +54,14 @@ func Run() {
 	apiGroup := router.Group("/api")
 	apiGroup.POST("/search", handlers.Search)
 	apiGroup.GET("/cities", handlers.Cities)
+	apiGroup.POST("/chat", handlers.Chat)
+	apiGroup.POST("/auth/send-otp", handlers.SendOTP)
+	apiGroup.POST("/auth/verify-otp", handlers.VerifyOTP)
+	flightsGroup := apiGroup.Group("/flights")
+	flightsGroup.Use(handlers.AuthMiddleware)
+	flightsGroup.GET("", handlers.ListFlights)
+	flightsGroup.POST("", handlers.AddFlight)
+	flightsGroup.DELETE("/:id", handlers.DeleteFlight)
 
 	buildPath := filepath.Join(*dataDir, "build")
 	if _, err := os.Stat(buildPath); err == nil {

@@ -21,9 +21,9 @@ WORKDIR /app
 COPY --from=app-builder /app/build ./build
 COPY --from=server-builder /app/triangle_travel .
 COPY --from=server-builder /app/seed .
-COPY db/schema.sql ./db/
-COPY iata_cities.json distances.json city_routes.json ./
+COPY db/schema.sql db/schema_auth.sql db/seed_data.sql ./db/
 EXPOSE 8080
 RUN ./seed && rm ./seed
+ENV ENV=production
 # PORT is set by Render; -host 0.0.0.0 for container
 CMD ["./triangle_travel", "-host", "0.0.0.0"]
