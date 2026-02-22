@@ -17,6 +17,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"triangle_travel/internal/api"
+	"triangle_travel/internal/auth"
 	"triangle_travel/internal/db"
 )
 
@@ -39,6 +40,12 @@ func Run() {
 		log.Fatalf("Database: %v", err)
 	}
 	defer database.Close()
+
+	// Seed dev user when in sandbox/development
+	if auth.IsDev() {
+		_, _ = database.Exec("INSERT OR IGNORE INTO users (phone) VALUES (?)", auth.DevPhone)
+		log.Printf("Dev mode: seeded user %s (OTP: %s)", auth.DevPhone, auth.DevOTP)
+	}
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()

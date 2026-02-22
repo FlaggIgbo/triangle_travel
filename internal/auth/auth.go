@@ -3,10 +3,20 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"os"
 	"time"
 )
 
-// Mock OTP for dev: "123456" works for any +1 number
+// Dev credentials for sandbox/development
+const DevPhone = "+15550000000"
+const DevOTP = "123456"
+
+// IsDev returns true when ENV is not production
+func IsDev() bool {
+	return os.Getenv("ENV") != "production" && os.Getenv("ENV") != "prod"
+}
+
+// Mock OTP for dev: "123456" works for any +1 number (legacy)
 const MockOTP = "123456"
 
 func GenerateToken() (string, error) {

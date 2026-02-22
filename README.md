@@ -13,7 +13,7 @@ A web app for travel planning with **Triangle Travel** (find stopover cities), *
 - **Backend**: Go, [Gin](https://github.com/gin-gonic/gin)
 - **Frontend**: [Svelte](https://svelte.dev/) (SvelteKit + Vite)
 - **Database**: SQLite (schema + seed data in `db/`)
-- **Auth**: OTP via US phone (mock: use `123456` for any +1 number in dev)
+- **Auth**: OTP via US phone. Dev/sandbox: `+15550000000` / `123456`, sessionStorage. Prod: Twilio + localStorage.
 
 ## Requirements
 

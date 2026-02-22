@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { getToken, setToken, setPhone, clearToken, isLoggedIn } from '$lib/auth';
+  import { getToken, setToken, setPhone, clearToken, isLoggedIn, DevPhone, DevOTP, isDev } from '$lib/auth';
 
   interface Flight {
     id: number;
@@ -162,11 +162,14 @@
       <div class="auth-card">
           {#if step === 'phone'}
             <h2>Sign in with US phone</h2>
+            {#if isDev}
+              <p class="dev-hint">Dev mode: use {DevPhone} and OTP {DevOTP}</p>
+            {/if}
             <p class="hint">We'll send a one-time code to your number</p>
             <input
               type="tel"
               bind:value={phone}
-              placeholder="(555) 123-4567"
+              placeholder={isDev ? DevPhone : '(555) 123-4567'}
               maxlength="14"
             />
             <button onclick={requestOtp} disabled={authLoading}>
@@ -174,11 +177,14 @@
             </button>
           {:else}
             <h2>Enter code</h2>
+            {#if isDev}
+              <p class="dev-hint">Dev: use {DevOTP}</p>
+            {/if}
             <p class="hint">Check your phone for the 6-digit code</p>
             <input
               type="text"
               bind:value={otp}
-              placeholder="000000"
+              placeholder={isDev ? DevOTP : '000000'}
               maxlength="6"
               pattern="[0-9]*"
               inputmode="numeric"
@@ -283,6 +289,7 @@
     gap: 1rem;
   }
   .auth-card h2 { font-size: 1.1rem; margin: 0; }
+  .dev-hint { font-size: 0.85rem; color: var(--accent); margin: 0 0 0.25rem 0; }
   .hint { font-size: 0.85rem; color: var(--muted); margin: 0; }
   .auth-card input {
     padding: 0.6rem 1rem;

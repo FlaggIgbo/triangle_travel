@@ -13,3 +13,5 @@ services:
     envVars:
       - key: PORT
         value: 8080
+      - key: ENV
+        value: production

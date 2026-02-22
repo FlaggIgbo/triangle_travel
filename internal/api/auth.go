@@ -14,7 +14,7 @@ type SendOTPRequest struct {
 	Phone string `json:"phone" binding:"required"`
 }
 
-// SendOTP creates/stores OTP for phone (mock: always 123456)
+// SendOTP creates/stores OTP for phone
 func (h *Handlers) SendOTP(c *gin.Context) {
 	var req SendOTPRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -27,7 +27,13 @@ func (h *Handlers) SendOTP(c *gin.Context) {
 		return
 	}
 
-	// Store OTP (mock - we use 123456 for all)
+	// Dev: accept dev phone without storing OTP
+	if auth.IsDev() && phone == auth.DevPhone {
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+		return
+	}
+
+	// Store OTP (mock in dev: 123456 for any; prod: use Twilio)
 	code := auth.GenerateOTP()
 	expires := auth.OTPExpiry()
 	_, err := h.DB.Exec(`
@@ -58,6 +64,33 @@ func (h *Handlers) VerifyOTP(c *gin.Context) {
 	}
 	phone := strings.TrimSpace(req.Phone)
 	code := strings.TrimSpace(req.Code)
+
+	// Dev: accept dev phone + dev OTP (user is seeded on server start)
+	if auth.IsDev() && phone == auth.DevPhone && code == auth.DevOTP {
+		var userID int64
+		err := h.DB.QueryRow("SELECT id FROM users WHERE phone = ?", phone).Scan(&userID)
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Dev user not seeded. Restart the server."})
+			return
+		}
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+			return
+		}
+		token, err := auth.GenerateToken()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
+			return
+		}
+		expiresAt := auth.TokenExpiry()
+		_, err = h.DB.Exec("INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)", userID, token, expiresAt)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"token": token})
+		return
+	}
 
 	var storedCode string
 	var expires interface{}
