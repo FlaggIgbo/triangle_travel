@@ -1,0 +1,15 @@
+# Render.com Blueprint - Triangle Travel
+# Deploy as a single Web Service (Go backend + Svelte SPA)
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: triangle-travel
+    runtime: docker
+
+    # Dockerfile handles: npm build, go build, seed, serve
+    dockerfilePath: ./Dockerfile
+
+    envVars:
+      - key: PORT
+        value: 8080
