@@ -27,6 +27,35 @@ func New(dataDir string) (*DB, error) {
 	return &DB{db}, nil
 }
 
+// GetCityForAirport returns the city_code for an airport IATA code, or the code itself if not found
+func (d *DB) GetCityForAirport(airportCode string) (string, error) {
+	var city string
+	err := d.QueryRow("SELECT city_code FROM iata_cities WHERE airport_code = ? LIMIT 1", airportCode).Scan(&city)
+	if err == sql.ErrNoRows {
+		return airportCode, nil // treat airport as its own city
+	}
+	if err != nil {
+		return "", err
+	}
+	return city, nil
+}
+
+// SameCity returns true if both airport codes belong to the same city
+func (d *DB) SameCity(a, b string) (bool, error) {
+	if a == b {
+		return true, nil
+	}
+	cityA, err := d.GetCityForAirport(a)
+	if err != nil {
+		return false, err
+	}
+	cityB, err := d.GetCityForAirport(b)
+	if err != nil {
+		return false, err
+	}
+	return cityA == cityB, nil
+}
+
 // GetAirportsForCity returns airport IATA codes for a city code
 func (d *DB) GetAirportsForCity(cityCode string) ([]string, error) {
 	rows, err := d.Query("SELECT airport_code FROM iata_cities WHERE city_code = ? ORDER BY airport_code", cityCode)

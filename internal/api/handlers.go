@@ -30,6 +30,16 @@ func (h *Handlers) Search(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// Prevent same-city searches (e.g. LGA to EWR)
+	same, err := h.DB.SameCity(req.Start, req.End)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if same {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Start and end must be different cities (e.g. LGA and EWR are both NYC)"})
+		return
+	}
 	args := flights.FlightSearch{
 		Start:     req.Start,
 		End:       req.End,
