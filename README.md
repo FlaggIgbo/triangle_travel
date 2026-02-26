@@ -5,8 +5,11 @@ A web app for travel planning with **Triangle Travel** (find stopover cities), *
 ## Features
 
 - **Triangle Travel** – Find a third city to explore on your round-trip itinerary (drive/train then fly, or fly then fly)
+  - Same-city detection (e.g. LGA ↔ EWR rejected; both are NYC)
+  - Alliance and airline filters for Kayak deep links
 - **AI Chat** – Ask travel-related questions (placeholder; integrate OpenAI/Anthropic for full AI)
 - **My Flights** – Add and view your booked flights (login required via OTP with US phone number)
+- **Error pages** – Dedicated 404 and 500 pages
 
 ## Tech Stack
 
@@ -116,3 +119,7 @@ docker run -p 8080:8080 travel-app
 ```
 
 The image seeds the database at build time and serves the app at http://localhost:8080.
+
+## CI
+
+GitHub Actions runs on push/PR to `main`/`master`: build (Go + Svelte), lint (`svelte-check`), and tests.

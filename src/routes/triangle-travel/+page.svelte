@@ -10,6 +10,7 @@
   let startDate = $state('2025-03-01');
   let endDate = $state('2025-03-15');
   let alliance = $state('None');
+  let airline = $state('');
   let cabin = $state('economy');
   let loading = $state(false);
   let error = $state<string | null>(null);
@@ -23,12 +24,27 @@
     { value: 'ALL', label: 'All Alliances' }
   ];
 
+  const airlines = [
+    { value: '', label: 'Any airline' },
+    { value: 'UA', label: 'United' },
+    { value: 'AA', label: 'American' },
+    { value: 'DL', label: 'Delta' },
+    { value: 'B6', label: 'JetBlue' },
+    { value: 'WN', label: 'Southwest' },
+    { value: 'AS', label: 'Alaska' },
+    { value: 'LH', label: 'Lufthansa' },
+    { value: 'BA', label: 'British Airways' }
+  ];
+
   function kayakMultiCity(from: string, to: string, via: string, dep: string, ret: string): string {
     let url = `https://www.kayak.com/flights/${from}-${to}/${dep}/${via}-${from}/${ret}?sort=bestflight_a`;
     if (alliance === 'ONE_WORLD' || alliance === 'SKY_TEAM' || alliance === 'STAR_ALLIANCE') {
       url += `&fs=alliance=${alliance}`;
     } else if (alliance === 'ALL') {
       url += '&fs=alliance=ONE_WORLD,SKY_TEAM,STAR_ALLIANCE';
+    }
+    if (airline) {
+      url += `&fs=airline=${airline}`;
     }
     return url;
   }
@@ -84,6 +100,14 @@
         <span>Alliance</span>
         <select bind:value={alliance}>
           {#each alliances as a}
+            <option value={a.value}>{a.label}</option>
+          {/each}
+        </select>
+      </label>
+      <label>
+        <span>Airline</span>
+        <select bind:value={airline}>
+          {#each airlines as a}
             <option value={a.value}>{a.label}</option>
           {/each}
         </select>
